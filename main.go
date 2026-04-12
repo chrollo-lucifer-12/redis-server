@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/redis-server/config"
+	"github.com/redis-server/server"
 )
 
 func setupFlags() {
@@ -16,4 +17,5 @@ func setupFlags() {
 func main() {
 	setupFlags()
 	log.Println("starting the server...")
+	server.RunServer()
 }
