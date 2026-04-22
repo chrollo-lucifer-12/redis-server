@@ -1,0 +1,7 @@
+[
+  {
+    "label": "run redis",
+    "command": "go run .",
+    "use_new_terminal": false,
+  },
+]

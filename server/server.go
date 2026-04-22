@@ -1,30 +1,47 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/redis-server/config"
+	"github.com/redis-server/core"
+	"github.com/redis-server/resp"
 )
 
-func readCommand(client net.Conn) (string, error) {
+func readCommand(client net.Conn) (*core.RedisCmd, error) {
 	var buf []byte = make([]byte, 512)
 
 	n, err := client.Read(buf)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(buf[:n]), nil
+	tokens, err := resp.DecodeArrayString(buf[:n])
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &core.RedisCmd{
+		Cmd:  strings.ToUpper(tokens[0]),
+		Args: tokens[1:],
+	}, nil
 }
 
-func respond(cmd string, client net.Conn) error {
-	if _, err := client.Write([]byte(cmd)); err != nil {
-		return err
+func respondWithError(client net.Conn, err error) {
+	client.Write([]byte(fmt.Sprintf("-%s/r/n", err)))
+}
+
+func respond(cmd *core.RedisCmd, client net.Conn) {
+	err := core.EvalAndInput(cmd, client)
+	if err != nil {
+		respondWithError(client, err)
 	}
-	return nil
 }
 
 func RunServer() {
@@ -60,9 +77,7 @@ func RunServer() {
 
 			log.Println("command", cmd)
 
-			if err = respond(cmd, c); err != nil {
-				log.Println("error in write: ", err)
-			}
+			respond(cmd, c)
 		}
 	}
 }
