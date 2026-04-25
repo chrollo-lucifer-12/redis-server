@@ -27,6 +27,8 @@ func readCommand(client net.Conn) (*core.RedisCmd, error) {
 		return nil, err
 	}
 
+	fmt.Println(tokens)
+
 	return &core.RedisCmd{
 		Cmd:  strings.ToUpper(tokens[0]),
 		Args: tokens[1:],
@@ -34,7 +36,7 @@ func readCommand(client net.Conn) (*core.RedisCmd, error) {
 }
 
 func respondWithError(client net.Conn, err error) {
-	client.Write([]byte(fmt.Sprintf("-%s/r/n", err)))
+	client.Write([]byte(fmt.Sprintf("-%s\r\n", err)))
 }
 
 func respond(cmd *core.RedisCmd, client net.Conn) {
@@ -74,8 +76,6 @@ func RunServer() {
 				}
 				log.Println("err", err)
 			}
-
-			log.Println("command", cmd)
 
 			respond(cmd, c)
 		}
