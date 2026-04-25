@@ -2,12 +2,12 @@ package core
 
 import (
 	"errors"
-	"net"
+	"io"
 
 	"github.com/redis-server/resp"
 )
 
-func evalPING(args []string, client net.Conn) error {
+func evalPING(args []string, client io.ReadWriter) error {
 	var b []byte
 
 	if len(args) >= 2 {
@@ -23,7 +23,7 @@ func evalPING(args []string, client net.Conn) error {
 	return err
 }
 
-func EvalAndInput(cmd *RedisCmd, client net.Conn) error {
+func EvalAndInput(cmd *RedisCmd, client io.ReadWriter) error {
 	switch cmd.Cmd {
 	case "PING":
 		return evalPING(cmd.Args, client)
