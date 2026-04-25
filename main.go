@@ -9,7 +9,7 @@ import (
 )
 
 func setupFlags() {
-	flag.StringVar(&config.Host, "host", "localhost", "host")
+	flag.StringVar(&config.Host, "host", "127.0.0.1", "host")
 	flag.IntVar(&config.Port, "port", 6379, "port")
 	flag.Parse()
 }
