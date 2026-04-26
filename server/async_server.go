@@ -72,7 +72,7 @@ func RunAsyncServer() error {
 				}
 
 				con_clients++
-				syscall.SetNonblock(serverFD, true)
+				syscall.SetNonblock(fd, true)
 
 				var socketServerEvent syscall.EpollEvent = syscall.EpollEvent{
 					Events: syscall.EPOLLIN,
