@@ -121,9 +121,9 @@ func EvalAndInput(cmd *RedisCmd, client io.ReadWriter) error {
 	case "GET":
 		return evalGET(cmd.Args, client)
 	case "TTL":
+		return evalTTL(cmd.Args, client)
 	default:
 		return evalPING(cmd.Args, client)
 	}
 
-	return nil
 }
