@@ -4,12 +4,15 @@ import (
 	"log"
 	"net"
 	"syscall"
+	"time"
 
 	"github.com/redis-server/config"
 	"github.com/redis-server/core"
 )
 
 var con_clients int = 0
+var cronFrequency time.Duration = 1 * time.Second
+var lastCronExecTime time.Time = time.Now()
 
 func RunAsyncServer() error {
 	log.Println("starting server on ", config.Host, config.Port)
@@ -58,6 +61,12 @@ func RunAsyncServer() error {
 	}
 
 	for {
+
+		if time.Now().After(lastCronExecTime.Add(cronFrequency)) {
+			core.DeleteExpiredKey()
+			lastCronExecTime = time.Now()
+		}
+
 		nevents, e := syscall.EpollWait(epollFD, events[:], -1)
 		if e != nil {
 			continue

@@ -1,6 +1,9 @@
 package core
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 var store map[string]*Obj
 
@@ -30,5 +33,54 @@ func Put(k string, obj *Obj) {
 }
 
 func Get(k string) *Obj {
-	return store[k]
+	v := store[k]
+	if v != nil {
+		if v.ExpiresAt <= time.Now().UnixMilli() {
+			delete(store, k)
+			return nil
+		}
+	}
+	return v
+}
+
+func Del(k string) bool {
+	if _, ok := store[k]; ok {
+		delete(store, k)
+		return true
+	}
+	return false
+}
+
+func expireSample() float32 {
+	var limit int = 20
+	var expiredCount int = 0
+
+	for key, obj := range store {
+		if obj.ExpiresAt != -1 {
+			limit--
+
+			if obj.ExpiresAt <= time.Now().UnixMilli() {
+				delete(store, key)
+				expiredCount++
+			}
+		}
+
+		if limit == 0 {
+			break
+		}
+	}
+
+	return float32(expiredCount) / float32(20.0)
+}
+
+func DeleteExpiredKey() {
+	for {
+		frac := expireSample()
+
+		if frac < 0.25 {
+			break
+		}
+	}
+
+	log.Println("deleted the expired but undeleted keys. total keys", len(store))
 }
